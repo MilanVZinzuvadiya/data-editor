@@ -2,13 +2,6 @@ import streamlit as st
 import pandas as pd
 from fuzzywuzzy import fuzz
 
-import pickle
-
-try:
-    index = pickle.load(open("var.pickle", "rb"))
-except (OSError, IOError) as e:
-    index = 0
-    pickle.dump(index, open("var.pickle", "wb"))
 
 
 def red_negatives(series):
@@ -31,49 +24,51 @@ st.write("""
 """)
 st.subheader('by Milan Zinzuvadiya')
 st.sidebar.header('MetaDATA')
-dg = st.sidebar.text_input("Data generator")
-
+dg = st.sidebar.text_input("Domain Expert")
+exp = st.sidebar.text_input("Experiment Name")
+number = st.sidebar.number_input('Query Number/Index',value=0)
+search_keyword = st.sidebar.text_input('Search Keyword')
 #df = pd.read_csv('demo.csv')
 #chng = True
 
-
+#index = 0
 l = ['demo.csv','demo2.csv']
 
 
-def create_csv(s):
+#csv = st.sidebar.text_input('CSV FILE:')
 
-    df = pd.read_csv(s)
-    search_keyword = st.text_input('Search Keyword')
-
-    relevents = []
-    for ind,row in df.iterrows():
-        prnt = row['title']
-        if search_keyword !='':
-            prnt = fuzzy_bold(prnt)
-        
-        st.markdown("""---""")
-        st.info(prnt)
-        if row['relevent'] == 1:
-            relevents.append(st.checkbox("relevent",key=ind,value=True))
-        else:
-            relevents.append(st.checkbox("relevent",key=ind))
-        
-        st.text("")
+#csv=l[]
+df = pd.read_csv(l[number])
 
 
-    #st.text(list(map(lambda x: 1 if x else 0,relevents)))
-    #st.text(relevents)
+relevents = []
+for ind,row in df.iterrows():
+    prnt = row['title']
+    if search_keyword !='':
+        prnt = fuzzy_bold(prnt)
+    
+    st.markdown("""---""")
+    st.info(prnt)
+    if row['relevent'] == 1:
+        relevents.append(st.checkbox("relevent",key=ind,value=True))
+    else:
+        relevents.append(st.checkbox("relevent",key=ind))
+    
+    st.text("")
 
-    df['new'] = list(map(lambda x: 1 if x else 0,relevents))
 
-    st.header(dg)
-    st.dataframe(df.style.apply(red_negatives,axis=0,subset=['relevent']))
+#st.text(list(map(lambda x: 1 if x else 0,relevents)))
+#st.text(relevents)
 
-if st.button("ChangeCSV"):
-    create_csv(l[index])
-    index = index + 1
-    pickle.dump(index, open("var.pickle", "wb"))
+df['new'] = list(map(lambda x: 1 if x else 0,relevents))
 
+filename = dg+'_'+exp+'_'+l[number]
+st.header(filename)
+st.dataframe(df.style.apply(red_negatives,axis=0,subset=['relevent']))
+
+if st.button("SaveCSV in gen_data "):
+    df.to_csv('gen_data/'+filename)
+    st.success('SAVED :: gen_data/'+filename+'.csv')
 #with col2: 
 #    for ind,row in df.iterrows():
 #        if row['relevent'] == 1:
